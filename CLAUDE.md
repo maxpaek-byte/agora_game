@@ -10,12 +10,12 @@
 agora_game/
 ├── CLAUDE.md            # This file - AI assistant guide
 ├── README.md            # Brief project description (Korean)
-└── typing-game.html     # Entire application (HTML + CSS + JS)
+└── index.html     # Entire application (HTML + CSS + JS)
 ```
 
-This is a **single-file application** — all HTML, CSS, and JavaScript live in `typing-game.html` (~671 lines).
+This is a **single-file application** — all HTML, CSS, and JavaScript live in `index.html` (~671 lines).
 
-### File Layout of `typing-game.html`
+### File Layout of `index.html`
 
 | Lines     | Section                        |
 |-----------|--------------------------------|
@@ -34,7 +34,7 @@ This is a **single-file application** — all HTML, CSS, and JavaScript live in 
 
 ## How to Run
 
-Open `typing-game.html` directly in any modern web browser. No server, build step, or installation required.
+Open `index.html` directly in any modern web browser. No server, build step, or installation required.
 
 ## Game Architecture
 
