@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>타이핑 마스터 | Typing Master</title>
+    <title>스네이크 마스터 | Snake Master</title>
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -38,7 +38,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
+            background:
                 radial-gradient(circle at 20% 50%, rgba(255, 0, 110, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 40% 20%, rgba(181, 55, 242, 0.1) 0%, transparent 50%);
@@ -61,7 +61,7 @@
 
         /* 헤더 */
         header {
-            padding: 20px 40px;
+            padding: 15px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -77,7 +77,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 20px rgba(255, 0, 110, 0.5);
             animation: glow 2s ease-in-out infinite;
         }
 
@@ -113,108 +112,23 @@
             text-shadow: 0 0 10px var(--neon-yellow);
         }
 
-        .lives {
-            color: var(--neon-pink);
-            text-shadow: 0 0 10px var(--neon-pink);
-        }
-
         /* 게임 영역 */
         .game-area {
             flex: 1;
-            position: relative;
-            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        .word {
-            position: absolute;
-            font-size: 1.5rem;
-            font-weight: 700;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-            animation: fall linear;
-            cursor: default;
-            transition: all 0.3s ease;
-        }
-
-        .word:hover {
-            transform: scale(1.05);
-        }
-
-        @keyframes fall {
-            from {
-                top: -50px;
-            }
-            to {
-                top: calc(100% - 50px);
-            }
-        }
-
-        .word-pink {
-            border-color: var(--neon-pink);
-            color: var(--neon-pink);
-            box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
-        }
-
-        .word-blue {
-            border-color: var(--neon-blue);
-            color: var(--neon-blue);
-            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-        }
-
-        .word-purple {
-            border-color: var(--neon-purple);
-            color: var(--neon-purple);
-            box-shadow: 0 0 20px rgba(181, 55, 242, 0.3);
-        }
-
-        .word-yellow {
-            border-color: var(--neon-yellow);
-            color: var(--neon-yellow);
-            box-shadow: 0 0 20px rgba(255, 190, 11, 0.3);
-        }
-
-        /* 입력 영역 */
-        .input-area {
-            padding: 30px 40px;
-            background: rgba(10, 14, 39, 0.9);
-            backdrop-filter: blur(10px);
-            border-top: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .input-wrapper {
-            max-width: 600px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        input {
-            width: 100%;
-            padding: 20px 30px;
-            font-size: 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
+        canvas {
             border: 2px solid var(--neon-blue);
-            border-radius: 15px;
-            color: white;
-            font-family: 'Noto Sans KR', sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.2), inset 0 0 30px rgba(0, 245, 255, 0.05);
         }
 
-        input:focus {
-            border-color: var(--neon-pink);
-            box-shadow: 0 0 30px rgba(255, 0, 110, 0.3);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        /* 게임 오버 화면 */
-        .game-over {
+        /* 오버레이 화면 */
+        .overlay {
             position: absolute;
             top: 0;
             left: 0;
@@ -222,11 +136,15 @@
             bottom: 0;
             background: rgba(5, 8, 18, 0.95);
             backdrop-filter: blur(20px);
-            display: none;
+            display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100;
             animation: fadeIn 0.5s ease;
+        }
+
+        .overlay.hidden {
+            display: none;
         }
 
         @keyframes fadeIn {
@@ -234,88 +152,14 @@
             to { opacity: 1; }
         }
 
-        .game-over.active {
-            display: flex;
-        }
-
-        .game-over-content {
+        .overlay-content {
             text-align: center;
             animation: slideUp 0.5s ease;
         }
 
         @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .game-over-title {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 4rem;
-            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .final-score {
-            font-size: 2rem;
-            color: var(--neon-yellow);
-            margin-bottom: 40px;
-            text-shadow: 0 0 20px var(--neon-yellow);
-        }
-
-        button {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 1.5rem;
-            padding: 15px 50px;
-            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
-            border: none;
-            border-radius: 50px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
-        }
-
-        button:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.5);
-        }
-
-        button:active {
-            transform: translateY(-1px);
-        }
-
-        /* 시작 화면 */
-        .start-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(5, 8, 18, 0.95);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .start-content {
-            text-align: center;
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .start-title {
@@ -363,309 +207,322 @@
             margin-bottom: 10px;
         }
 
-        /* 파티클 효과 */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            animation: particleFade 1s ease-out forwards;
-        }
-
-        @keyframes particleFade {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* 레벨업 알림 */
-        .level-up {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .game-over-title {
             font-family: 'Black Han Sans', sans-serif;
             font-size: 4rem;
-            color: var(--neon-yellow);
-            text-shadow: 0 0 40px var(--neon-yellow);
-            pointer-events: none;
-            animation: levelUpAnim 2s ease-out forwards;
-            z-index: 50;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        @keyframes levelUpAnim {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(0.8);
-                opacity: 0;
-            }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .final-score {
+            font-size: 2rem;
+            color: var(--neon-yellow);
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px var(--neon-yellow);
+        }
+
+        .high-score {
+            font-size: 1.2rem;
+            color: var(--neon-purple);
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        button {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 1.5rem;
+            padding: 15px 50px;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.5);
+        }
+
+        button:active {
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="logo">⚡ 타이핑 마스터</div>
+            <div class="logo">🐍 스네이크 마스터</div>
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-label">Score</div>
                     <div class="stat-value" id="score">0</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Level</div>
-                    <div class="stat-value" id="level">1</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Lives</div>
-                    <div class="stat-value lives" id="lives">❤️❤️❤️</div>
+                    <div class="stat-label">Best</div>
+                    <div class="stat-value" id="best">0</div>
                 </div>
             </div>
         </header>
 
-        <div class="game-area" id="gameArea"></div>
-
-        <div class="input-area">
-            <div class="input-wrapper">
-                <input 
-                    type="text" 
-                    id="wordInput" 
-                    placeholder="여기에 단어를 입력하세요..." 
-                    autocomplete="off"
-                    disabled
-                >
-            </div>
+        <div class="game-area">
+            <canvas id="gameCanvas"></canvas>
         </div>
 
-        <div class="start-screen" id="startScreen">
-            <div class="start-content">
-                <h1 class="start-title">타이핑 마스터</h1>
-                <p class="start-subtitle">TYPING MASTER</p>
+        <div class="overlay" id="startScreen">
+            <div class="overlay-content">
+                <h1 class="start-title">스네이크 마스터</h1>
+                <p class="start-subtitle">SNAKE MASTER</p>
                 <div class="instructions">
                     <h3>게임 방법</h3>
-                    <p>📝 떨어지는 단어를 빠르게 타이핑하세요</p>
-                    <p>⚡ 정확히 입력하면 점수를 획득합니다</p>
-                    <p>💔 단어가 바닥에 닿으면 생명이 줄어듭니다</p>
-                    <p>🎯 레벨이 올라갈수록 속도가 빨라집니다</p>
+                    <p>⬆⬇⬅➡ 방향키로 뱀을 조종하세요</p>
+                    <p>🍎 먹이를 먹으면 점수가 올라갑니다</p>
+                    <p>📏 먹이를 먹을수록 뱀이 길어집니다</p>
+                    <p>💀 벽이나 자기 몸에 부딪히면 게임 오버!</p>
                 </div>
                 <button onclick="startGame()">게임 시작</button>
             </div>
         </div>
 
-        <div class="game-over" id="gameOver">
-            <div class="game-over-content">
+        <div class="overlay hidden" id="gameOverScreen">
+            <div class="overlay-content">
                 <h1 class="game-over-title">GAME OVER</h1>
                 <p class="final-score">최종 점수: <span id="finalScore">0</span></p>
-                <button onclick="restartGame()">다시 시작</button>
+                <p class="high-score">최고 점수: <span id="highScore">0</span></p>
+                <button onclick="startGame()">다시 시작</button>
             </div>
         </div>
     </div>
 
     <script>
-        const words = [
-            '사과', '바나나', '포도', '딸기', '수박', '참외', '복숭아', '자두',
-            '컴퓨터', '키보드', '마우스', '모니터', '스피커', '헤드셋',
-            '학교', '공원', '도서관', '병원', '은행', '우체국', '편의점',
-            '햄버거', '피자', '치킨', '떡볶이', '김밥', '라면', '파스타',
-            '축구', '야구', '농구', '배구', '탁구', '테니스', '배드민턴',
-            '노래', '춤', '그림', '사진', '영화', '드라마', '게임',
-            '친구', '가족', '선생님', '학생', '의사', '간호사', '경찰',
-            '봄', '여름', '가을', '겨울', '비', '눈', '바람', '구름',
-            '강아지', '고양이', '토끼', '햄스터', '앵무새', '금붕어',
-            '책', '연필', '지우개', '공책', '가방', '필통', '자',
-            '자동차', '버스', '지하철', '기차', '비행기', '배', '자전거',
-            '산', '바다', '강', '호수', '폭포', '계곡', '섬',
-            '빨강', '파랑', '노랑', '초록', '검정', '하양', '분홍',
-            '피아노', '기타', '드럼', '바이올린', '플루트', '색소폰',
-            '사랑', '행복', '희망', '꿈', '용기', '자신감', '열정'
-        ];
-
-        let score = 0;
-        let level = 1;
-        let lives = 3;
-        let gameActive = false;
-        let fallingWords = [];
-        let wordSpeed = 3000;
-        let spawnRate = 2000;
-        let spawnInterval;
-        let gameLoop;
-
-        const colors = ['pink', 'blue', 'purple', 'yellow'];
-        const gameArea = document.getElementById('gameArea');
-        const wordInput = document.getElementById('wordInput');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
         const scoreDisplay = document.getElementById('score');
-        const levelDisplay = document.getElementById('level');
-        const livesDisplay = document.getElementById('lives');
-        const gameOverScreen = document.getElementById('gameOver');
+        const bestDisplay = document.getElementById('best');
         const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+
+        const CELL = 20;
+        let COLS, ROWS;
+        let snake, direction, nextDirection, food, score, highScore, gameActive, loopId;
+
+        highScore = 0;
+
+        function resizeCanvas() {
+            const area = document.querySelector('.game-area');
+            const maxW = area.clientWidth - 40;
+            const maxH = area.clientHeight - 40;
+            COLS = Math.floor(maxW / CELL);
+            ROWS = Math.floor(maxH / CELL);
+            if (COLS < 10) COLS = 10;
+            if (ROWS < 10) ROWS = 10;
+            canvas.width = COLS * CELL;
+            canvas.height = ROWS * CELL;
+        }
 
         function startGame() {
-            startScreen.style.display = 'none';
-            gameActive = true;
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            resizeCanvas();
+
+            snake = [{ x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) }];
+            direction = { x: 1, y: 0 };
+            nextDirection = { x: 1, y: 0 };
             score = 0;
-            level = 1;
-            lives = 3;
-            wordSpeed = 3000;
-            spawnRate = 2000;
-            fallingWords = [];
-            
-            updateDisplay();
-            wordInput.disabled = false;
-            wordInput.focus();
-            
-            spawnInterval = setInterval(spawnWord, spawnRate);
-            gameLoop = setInterval(checkWords, 100);
-        }
+            gameActive = true;
 
-        function spawnWord() {
-            if (!gameActive) return;
-            
-            const word = words[Math.floor(Math.random() * words.length)];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const left = Math.random() * (gameArea.offsetWidth - 200);
-            
-            const wordElement = document.createElement('div');
-            wordElement.className = `word word-${color}`;
-            wordElement.textContent = word;
-            wordElement.style.left = left + 'px';
-            wordElement.style.animationDuration = wordSpeed + 'ms';
-            
-            gameArea.appendChild(wordElement);
-            
-            fallingWords.push({
-                element: wordElement,
-                word: word,
-                startTime: Date.now()
-            });
-        }
+            scoreDisplay.textContent = score;
+            spawnFood();
 
-        function checkWords() {
-            if (!gameActive) return;
-            
-            const now = Date.now();
-            fallingWords = fallingWords.filter(wordObj => {
-                const elapsed = now - wordObj.startTime;
-                if (elapsed >= wordSpeed) {
-                    wordObj.element.remove();
-                    loseLife();
-                    return false;
+            if (loopId) cancelAnimationFrame(loopId);
+            let last = 0;
+            function loop(timestamp) {
+                if (!gameActive) return;
+                if (timestamp - last >= getSpeed()) {
+                    last = timestamp;
+                    update();
+                    draw();
                 }
-                return true;
-            });
-        }
-
-        wordInput.addEventListener('input', (e) => {
-            const input = e.target.value.trim();
-            if (!input || !gameActive) return;
-            
-            const matchIndex = fallingWords.findIndex(w => w.word === input);
-            if (matchIndex !== -1) {
-                const wordObj = fallingWords[matchIndex];
-                destroyWord(wordObj.element);
-                fallingWords.splice(matchIndex, 1);
-                
-                score += 10 * level;
-                updateScore();
-                wordInput.value = '';
-                
-                if (score > 0 && score % 100 === 0) {
-                    levelUp();
-                }
+                loopId = requestAnimationFrame(loop);
             }
-        });
-
-        function destroyWord(element) {
-            const rect = element.getBoundingClientRect();
-            createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            element.remove();
+            loopId = requestAnimationFrame(loop);
         }
 
-        function createParticles(x, y) {
-            for (let i = 0; i < 12; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                particle.style.width = '8px';
-                particle.style.height = '8px';
-                particle.style.borderRadius = '50%';
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)] === 'pink' ? 'var(--neon-pink)' :
-                                          colors[Math.floor(Math.random() * colors.length)] === 'blue' ? 'var(--neon-blue)' :
-                                          colors[Math.floor(Math.random() * colors.length)] === 'purple' ? 'var(--neon-purple)' : 'var(--neon-yellow)';
-                
-                const angle = (Math.PI * 2 * i) / 12;
-                const distance = 50 + Math.random() * 30;
-                particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
-                particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
-                
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 1000);
-            }
+        function getSpeed() {
+            if (score < 50) return 150;
+            if (score < 100) return 130;
+            if (score < 200) return 110;
+            if (score < 300) return 90;
+            return 75;
         }
 
-        function levelUp() {
-            level++;
-            wordSpeed = Math.max(1500, wordSpeed - 200);
-            spawnRate = Math.max(1000, spawnRate - 150);
-            
-            clearInterval(spawnInterval);
-            spawnInterval = setInterval(spawnWord, spawnRate);
-            
-            const levelUpText = document.createElement('div');
-            levelUpText.className = 'level-up';
-            levelUpText.textContent = `LEVEL ${level}!`;
-            gameArea.appendChild(levelUpText);
-            setTimeout(() => levelUpText.remove(), 2000);
-            
-            updateDisplay();
+        function spawnFood() {
+            let pos;
+            do {
+                pos = {
+                    x: Math.floor(Math.random() * COLS),
+                    y: Math.floor(Math.random() * ROWS)
+                };
+            } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+            food = pos;
         }
 
-        function loseLife() {
-            lives--;
-            updateDisplay();
-            
-            if (lives <= 0) {
+        function update() {
+            direction = { ...nextDirection };
+            const head = {
+                x: snake[0].x + direction.x,
+                y: snake[0].y + direction.y
+            };
+
+            if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
                 gameOver();
+                return;
+            }
+
+            if (snake.some(s => s.x === head.x && s.y === head.y)) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreDisplay.textContent = score;
+                spawnFood();
+            } else {
+                snake.pop();
             }
         }
 
-        function updateScore() {
-            scoreDisplay.textContent = score;
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawFood();
+            drawSnake();
         }
 
-        function updateDisplay() {
-            scoreDisplay.textContent = score;
-            levelDisplay.textContent = level;
-            livesDisplay.textContent = '❤️'.repeat(lives);
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= COLS; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * CELL, 0);
+                ctx.lineTo(x * CELL, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= ROWS; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * CELL);
+                ctx.lineTo(canvas.width, y * CELL);
+                ctx.stroke();
+            }
+        }
+
+        function drawSnake() {
+            snake.forEach((seg, i) => {
+                const x = seg.x * CELL;
+                const y = seg.y * CELL;
+                const pad = 1;
+
+                if (i === 0) {
+                    ctx.fillStyle = '#00f5ff';
+                    ctx.shadowColor = '#00f5ff';
+                    ctx.shadowBlur = 15;
+                } else {
+                    const t = i / snake.length;
+                    const r = Math.round(0 + t * 181);
+                    const g = Math.round(245 - t * 190);
+                    const b = Math.round(255 - t * 13);
+                    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.shadowBlur = 8;
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(x + pad, y + pad, CELL - pad * 2, CELL - pad * 2, 4);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        function drawFood() {
+            const x = food.x * CELL + CELL / 2;
+            const y = food.y * CELL + CELL / 2;
+            const r = CELL / 2 - 2;
+            const pulseScale = 1 + 0.15 * Math.sin(Date.now() / 200);
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(pulseScale, pulseScale);
+
+            ctx.shadowColor = '#ff006e';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#ff006e';
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(-r * 0.25, -r * 0.25, r * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
         }
 
         function gameOver() {
             gameActive = false;
-            clearInterval(spawnInterval);
-            clearInterval(gameLoop);
-            wordInput.disabled = true;
-            
+            if (loopId) cancelAnimationFrame(loopId);
+
+            if (score > highScore) {
+                highScore = score;
+                bestDisplay.textContent = highScore;
+            }
+
             document.getElementById('finalScore').textContent = score;
-            gameOverScreen.classList.add('active');
-            
-            fallingWords.forEach(w => w.element.remove());
-            fallingWords = [];
+            document.getElementById('highScore').textContent = highScore;
+            gameOverScreen.classList.remove('hidden');
         }
 
-        function restartGame() {
-            gameOverScreen.classList.remove('active');
-            gameArea.innerHTML = '';
-            startGame();
-        }
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (direction.y !== 1) nextDirection = { x: 0, y: -1 };
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    if (direction.y !== -1) nextDirection = { x: 0, y: 1 };
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    if (direction.x !== 1) nextDirection = { x: -1, y: 0 };
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    if (direction.x !== -1) nextDirection = { x: 1, y: 0 };
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (!gameActive) resizeCanvas();
+        });
+
+        resizeCanvas();
     </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Typing Master (타이핑 마스터)** is a Korean-language typing speed game built as a single-file web application. It was created as an educational project for an Agora class. Players type falling Korean words before they reach the bottom of the screen.
+**Snake Master (스네이크 마스터)** is a Korean-language snake game built as a single-file web application. It was created as an educational project for an Agora class. Players control a snake with arrow keys, eating food to grow longer while avoiding walls and their own tail.
 
 ## Repository Structure
 
@@ -10,23 +10,23 @@
 agora_game/
 ├── CLAUDE.md            # This file - AI assistant guide
 ├── README.md            # Brief project description (Korean)
-└── index.html     # Entire application (HTML + CSS + JS)
+└── index.html           # Entire application (HTML + CSS + JS)
 ```
 
-This is a **single-file application** — all HTML, CSS, and JavaScript live in `index.html` (~671 lines).
+This is a **single-file application** — all HTML, CSS, and JavaScript live in `index.html` (~528 lines).
 
 ### File Layout of `index.html`
 
 | Lines     | Section                        |
 |-----------|--------------------------------|
 | 1-7       | Document head, meta, fonts     |
-| 8-413     | `<style>` block (all CSS)      |
-| 415-471   | `<body>` HTML structure         |
-| 473-669   | `<script>` block (all JS)      |
+| 8-261     | `<style>` block (all CSS)      |
+| 263-306   | `<body>` HTML structure         |
+| 308-526   | `<script>` block (all JS)      |
 
 ## Tech Stack
 
-- **HTML5 / CSS3 / Vanilla JavaScript (ES6)** — no frameworks or libraries
+- **HTML5 Canvas / CSS3 / Vanilla JavaScript (ES6)** — no frameworks or libraries
 - **Google Fonts CDN** — Black Han Sans, Noto Sans KR
 - **No build tools** — no bundler, transpiler, package manager, or dependencies
 - **No tests** — no testing framework is configured
@@ -41,45 +41,56 @@ Open `index.html` directly in any modern web browser. No server, build step, or 
 ### Game States
 
 1. **START** — Modal overlay with instructions, "게임 시작" button
-2. **ACTIVE** — Words fall from top; player types to destroy them
-3. **GAME_OVER** — Modal showing final score and restart button
+2. **ACTIVE** — Snake moves on canvas; player steers with arrow keys
+3. **GAME_OVER** — Modal showing final score, high score, and restart button
 
 ### Core Game Logic (JavaScript)
 
 | Function          | Purpose                                              |
 |-------------------|------------------------------------------------------|
-| `startGame()`     | Initializes state, starts spawn and check intervals  |
-| `spawnWord()`     | Creates a random falling word element in the game area |
-| `checkWords()`    | Runs every 100ms; removes words that reached bottom, triggers `loseLife()` |
-| `wordInput` listener | Matches typed input against active falling words   |
-| `destroyWord()`   | Removes matched word element, triggers particle effect |
-| `levelUp()`       | Increases level, speeds up word fall and spawn rate   |
-| `loseLife()`      | Decrements lives; calls `gameOver()` at 0 lives      |
-| `gameOver()`      | Stops intervals, disables input, shows game-over screen |
-| `restartGame()`   | Clears game area, re-calls `startGame()`             |
+| `startGame()`     | Initializes state, starts `requestAnimationFrame` loop |
+| `update()`        | Moves snake, checks collisions, handles food eating  |
+| `draw()`          | Clears canvas, draws grid, food, and snake           |
+| `drawSnake()`     | Renders snake segments with neon gradient coloring    |
+| `drawFood()`      | Renders pulsing neon food circle                     |
+| `drawGrid()`      | Renders subtle background grid lines                 |
+| `spawnFood()`     | Places food at random position not overlapping snake  |
+| `getSpeed()`      | Returns tick interval; decreases as score increases   |
+| `gameOver()`      | Stops loop, updates high score, shows game-over screen |
+| `resizeCanvas()`  | Fits canvas to available space on load and resize     |
 
 ### Key State Variables
 
 ```javascript
-score       // Player score (10 * level per word)
-level       // Current level (increments every 100 points)
-lives       // 3 lives; lose one when a word hits bottom
-gameActive  // Boolean flag for game loop
-fallingWords // Array of {element, word, startTime} objects
-wordSpeed   // CSS animation duration in ms (starts 3000, min 1500)
-spawnRate   // Interval between spawns in ms (starts 2000, min 1000)
+snake         // Array of {x, y} grid positions (head is index 0)
+direction     // Current movement vector {x, y}
+nextDirection // Buffered next direction (prevents 180° reversal)
+food          // {x, y} grid position of current food
+score         // Player score (+10 per food eaten)
+highScore     // Session high score
+gameActive    // Boolean flag for game loop
+CELL          // Grid cell size in pixels (20)
+COLS, ROWS    // Grid dimensions (computed from canvas size)
 ```
 
-### Word Pool
+### Speed Progression
 
-115 Korean words across categories: fruits, electronics, places, food, sports, entertainment, people, weather, animals, school supplies, vehicles, geography, colors, instruments, emotions. Defined as a flat array at the top of the `<script>` block.
+| Score     | Tick interval (ms) |
+|-----------|--------------------|
+| 0–49      | 150                |
+| 50–99     | 130                |
+| 100–199   | 110                |
+| 200–299   | 90                 |
+| 300+      | 75                 |
 
 ### Visual Design
 
 - **Neon aesthetic** on dark background (`#0a0e27`)
 - CSS custom properties: `--neon-pink`, `--neon-blue`, `--neon-purple`, `--neon-yellow`
-- CSS keyframe animations: `fall`, `bgPulse`, `glow`, `fadeIn`, `slideUp`, `pulse`, `particleFade`, `levelUpAnim`, `titleGlow`
-- Particle burst effect on word destruction (12 particles per word)
+- CSS keyframe animations: `bgPulse`, `glow`, `fadeIn`, `slideUp`, `pulse`, `titleGlow`
+- Snake head glows neon-blue; body gradient transitions from blue to purple
+- Food pulses with neon-pink glow
+- Canvas has neon-blue border with glow shadow
 
 ## Development Conventions
 
@@ -89,12 +100,11 @@ spawnRate   // Interval between spawns in ms (starts 2000, min 1000)
 - CSS comments are in Korean (e.g., `/* 배경 애니메이션 */`, `/* 게임 영역 */`)
 - JavaScript has no comments — logic is expressed through descriptive function names
 - DOM elements are accessed via `document.getElementById()` cached in top-level `const` variables
-- Game timing uses `setInterval` / `setTimeout` with `Date.now()` for elapsed-time checks
+- Game loop uses `requestAnimationFrame` with timestamp-based throttling
 
 ### Korean Language Context
 
-- UI text is in Korean (instructions, labels, placeholder text)
-- The word pool is entirely Korean vocabulary
+- UI text is in Korean (instructions, labels, game-over text)
 - Font choices (Black Han Sans, Noto Sans KR) support Korean rendering
 - The `<html lang="ko">` attribute is set
 
@@ -108,9 +118,8 @@ spawnRate   // Interval between spawns in ms (starts 2000, min 1000)
 
 ## Known Limitations
 
-- No mobile/touch input support
+- No mobile/touch input support (arrow keys only)
 - No accessibility attributes (ARIA labels, screen reader support)
 - No error handling in JavaScript
-- Word list is hardcoded (not externalized or configurable)
-- No persistent high score storage
-- Particle color selection has a logic quirk (re-rolls `Math.random()` multiple times in the ternary chain)
+- No persistent high score storage (resets on page reload)
+- Canvas does not resize during active gameplay
