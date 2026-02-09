@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기업마당 지원사업 공고</title>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff006e;
+            --neon-blue: #00f5ff;
+            --neon-purple: #b537f2;
+            --neon-yellow: #ffbe0b;
+            --dark-bg: #0a0e27;
+            --darker-bg: #050812;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 헤더 */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 2.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 20px rgba(0, 245, 255, 0.5), 0 0 40px rgba(0, 245, 255, 0.3);
+            margin-bottom: 10px;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #888;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 20px rgba(0, 245, 255, 0.5), 0 0 40px rgba(0, 245, 255, 0.3); }
+            to { text-shadow: 0 0 30px rgba(0, 245, 255, 0.8), 0 0 60px rgba(0, 245, 255, 0.5); }
+        }
+
+        /* 컨트롤 영역 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: 2px solid var(--neon-blue);
+            background: rgba(0, 245, 255, 0.1);
+            color: var(--neon-blue);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(0, 245, 255, 0.25);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid rgba(0, 245, 255, 0.3);
+            border-top-color: var(--neon-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* 상태 표시 */
+        .status-bar {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-bar .count {
+            color: var(--neon-yellow);
+            font-weight: 700;
+        }
+
+        .status-bar .time {
+            color: #666;
+            margin-left: 15px;
+        }
+
+        /* 필터 영역 */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 18px;
+            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--neon-purple);
+            color: var(--neon-purple);
+            background: rgba(181, 55, 242, 0.1);
+        }
+
+        /* 테이블 컨테이너 */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        thead th {
+            background: rgba(0, 245, 255, 0.1);
+            color: var(--neon-blue);
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 2px solid rgba(0, 245, 255, 0.3);
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            width: 50px;
+            text-align: center;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s ease;
+            animation: fadeIn 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 245, 255, 0.05);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        tbody td {
+            padding: 14px 20px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            vertical-align: top;
+        }
+
+        tbody td:first-child {
+            text-align: center;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        /* 분야 뱃지 */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-tech { background: rgba(0, 245, 255, 0.15); color: var(--neon-blue); border: 1px solid rgba(0, 245, 255, 0.3); }
+        .badge-finance { background: rgba(255, 190, 11, 0.15); color: var(--neon-yellow); border: 1px solid rgba(255, 190, 11, 0.3); }
+        .badge-hr { background: rgba(181, 55, 242, 0.15); color: var(--neon-purple); border: 1px solid rgba(181, 55, 242, 0.3); }
+        .badge-export { background: rgba(255, 0, 110, 0.15); color: var(--neon-pink); border: 1px solid rgba(255, 0, 110, 0.3); }
+        .badge-default { background: rgba(255, 255, 255, 0.08); color: #aaa; border: 1px solid rgba(255, 255, 255, 0.15); }
+
+        /* 사업명 링크 스타일 */
+        .biz-name {
+            color: #e0e0e0;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .biz-name:hover {
+            color: var(--neon-blue);
+        }
+
+        /* 신청기간 */
+        .period {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .period.active {
+            color: #4ade80;
+        }
+
+        .period.expired {
+            color: #666;
+            text-decoration: line-through;
+        }
+
+        /* 등록일 */
+        .reg-date {
+            font-size: 0.85rem;
+            color: #888;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .reg-date.recent {
+            color: var(--neon-yellow);
+            font-weight: 700;
+        }
+
+        /* 로딩 상태 */
+        .loading-container {
+            text-align: center;
+            padding: 80px 20px;
+            color: #555;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 245, 255, 0.15);
+            border-top-color: var(--neon-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        /* 에러 상태 */
+        .error-container {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--neon-pink);
+        }
+
+        .error-container p {
+            margin-bottom: 10px;
+        }
+
+        .error-container .hint {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        /* 빈 상태 */
+        .empty-container {
+            text-align: center;
+            padding: 60px 20px;
+            color: #555;
+        }
+
+        /* 카드 뷰 (모바일) */
+        .card-view {
+            display: none;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 245, 255, 0.3);
+            background: rgba(0, 245, 255, 0.03);
+        }
+
+        .card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+
+        .card .card-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 8px;
+        }
+
+        .card .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 푸터 */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #444;
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--neon-blue);
+            text-decoration: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .table-container {
+                display: none;
+            }
+
+            .card-view {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>기업마당 지원사업 공고</h1>
+        <p>중소벤처기업부 기업마당 - 정부 지원사업 통합 안내</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="fetchBtn" onclick="fetchData()">데이터 불러오기</button>
+        <button class="btn" id="refreshBtn" onclick="fetchData()" style="display:none;">새로고침</button>
+    </div>
+
+    <div class="status-bar" id="statusBar"></div>
+
+    <div class="filter-bar" id="filterBar" style="display:none;">
+        <button class="filter-btn active" onclick="filterByCategory(this, '전체')">전체</button>
+    </div>
+
+    <!-- 테이블 뷰 (데스크톱) -->
+    <div class="table-container" id="tableContainer" style="display:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>분야</th>
+                    <th>사업명</th>
+                    <th>신청기간</th>
+                    <th>등록일</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 카드 뷰 (모바일) -->
+    <div class="card-view" id="cardView"></div>
+
+    <!-- 로딩 -->
+    <div class="loading-container" id="loadingContainer" style="display:none;">
+        <div class="loading-spinner"></div>
+        <p>기업마당에서 데이터를 불러오는 중...</p>
+    </div>
+
+    <!-- 에러 -->
+    <div class="error-container" id="errorContainer" style="display:none;"></div>
+
+    <!-- 빈 상태 -->
+    <div class="empty-container" id="emptyContainer" style="display:none;"></div>
+
+    <div class="footer">
+        <p>데이터 출처: <a href="https://www.bizinfo.go.kr" target="_blank">기업마당 (bizinfo.go.kr)</a></p>
+        <p style="margin-top:5px;">Agora Class Project</p>
+    </div>
+
+    <script>
+        const BIZINFO_URL = 'https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/list.do';
+        const PROXY_URLS = [
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?',
+        ];
+
+        let allItems = [];
+        let currentFilter = '전체';
+
+        // n8n 워크플로우의 CSS 선택자 기반 데이터 추출
+        function parseHTML(htmlString) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+
+            // n8n 워크플로우의 CSS 선택자 사용
+            const 분야Elements = doc.querySelectorAll('.table_Type_1 tbody tr td:nth-child(2)');
+            const 사업명Elements = doc.querySelectorAll('.table_Type_1 tbody tr td.txt_l a');
+            const 신청기간Elements = doc.querySelectorAll('.table_Type_1 tbody tr td:nth-child(4)');
+            const 등록일Elements = doc.querySelectorAll('.table_Type_1 tbody tr td:nth-child(7)');
+
+            const items = [];
+            const count = Math.min(분야Elements.length, 사업명Elements.length, 신청기간Elements.length, 등록일Elements.length);
+
+            for (let i = 0; i < count; i++) {
+                const 분야 = 분야Elements[i]?.textContent?.trim() || '';
+                const 사업명 = 사업명Elements[i]?.textContent?.trim() || '';
+                const 신청기간 = 신청기간Elements[i]?.textContent?.trim() || '';
+                const 등록일 = 등록일Elements[i]?.textContent?.trim() || '';
+                const href = 사업명Elements[i]?.getAttribute('href') || '';
+
+                if (사업명) {
+                    items.push({ 분야, 사업명, 신청기간, 등록일, href });
+                }
+            }
+
+            return items;
+        }
+
+        // CORS 프록시를 통한 데이터 가져오기
+        async function fetchWithProxy(proxyUrl, targetUrl) {
+            const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.text();
+        }
+
+        // 메인 데이터 불러오기
+        async function fetchData() {
+            const fetchBtn = document.getElementById('fetchBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const loadingContainer = document.getElementById('loadingContainer');
+            const tableContainer = document.getElementById('tableContainer');
+            const errorContainer = document.getElementById('errorContainer');
+            const emptyContainer = document.getElementById('emptyContainer');
+            const filterBar = document.getElementById('filterBar');
+
+            // UI 초기화
+            fetchBtn.style.display = 'none';
+            refreshBtn.style.display = 'none';
+            tableContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+            emptyContainer.style.display = 'none';
+            filterBar.style.display = 'none';
+            loadingContainer.style.display = 'block';
+
+            let html = null;
+            let lastError = null;
+
+            // 프록시 순차 시도
+            for (const proxy of PROXY_URLS) {
+                try {
+                    html = await fetchWithProxy(proxy, BIZINFO_URL);
+                    if (html && html.length > 1000) break;
+                    html = null;
+                } catch (e) {
+                    lastError = e;
+                    html = null;
+                }
+            }
+
+            // 직접 요청 시도 (같은 도메인이거나 CORS 허용 시)
+            if (!html) {
+                try {
+                    const resp = await fetch(BIZINFO_URL);
+                    if (resp.ok) {
+                        html = await resp.text();
+                    }
+                } catch (e) {
+                    lastError = e;
+                }
+            }
+
+            loadingContainer.style.display = 'none';
+
+            if (!html) {
+                showError(lastError);
+                refreshBtn.style.display = 'inline-block';
+                return;
+            }
+
+            // HTML 파싱
+            allItems = parseHTML(html);
+
+            if (allItems.length === 0) {
+                emptyContainer.style.display = 'block';
+                emptyContainer.innerHTML = '<p>데이터를 파싱할 수 없습니다.</p><p class="hint" style="color:#666;font-size:0.85rem;margin-top:10px;">페이지 구조가 변경되었을 수 있습니다.</p>';
+                refreshBtn.style.display = 'inline-block';
+                return;
+            }
+
+            // 필터 버튼 생성
+            buildFilterButtons();
+            filterBar.style.display = 'flex';
+
+            // 데이터 표시
+            renderData(allItems);
+
+            // 상태 바 업데이트
+            const now = new Date();
+            document.getElementById('statusBar').innerHTML =
+                `<span class="count">${allItems.length}건</span>의 공고를 불러왔습니다.` +
+                `<span class="time">조회 시간: ${now.toLocaleString('ko-KR')}</span>`;
+
+            refreshBtn.style.display = 'inline-block';
+            tableContainer.style.display = 'block';
+        }
+
+        // 분야별 필터 버튼 생성
+        function buildFilterButtons() {
+            const categories = ['전체', ...new Set(allItems.map(item => item.분야).filter(Boolean))];
+            const filterBar = document.getElementById('filterBar');
+            filterBar.innerHTML = '';
+
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn' + (cat === currentFilter ? ' active' : '');
+                btn.textContent = cat;
+                btn.onclick = () => filterByCategory(btn, cat);
+                filterBar.appendChild(btn);
+            });
+        }
+
+        // 카테고리 필터
+        function filterByCategory(btn, category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const filtered = category === '전체'
+                ? allItems
+                : allItems.filter(item => item.분야 === category);
+
+            renderData(filtered);
+        }
+
+        // 뱃지 클래스 매핑
+        function getBadgeClass(분야) {
+            if (!분야) return 'badge-default';
+            if (분야.includes('기술') || 분야.includes('R&D') || 분야.includes('혁신') || 분야.includes('스마트')) return 'badge-tech';
+            if (분야.includes('금융') || 분야.includes('자금') || 분야.includes('투자') || 분야.includes('보증')) return 'badge-finance';
+            if (분야.includes('인력') || 분야.includes('교육') || 분야.includes('고용') || 분야.includes('훈련')) return 'badge-hr';
+            if (분야.includes('수출') || 분야.includes('해외') || 분야.includes('글로벌') || 분야.includes('무역')) return 'badge-export';
+            return 'badge-default';
+        }
+
+        // 등록일이 최근 2일 이내인지 확인
+        function isRecent(dateStr) {
+            if (!dateStr) return false;
+            try {
+                const regDate = new Date(dateStr.trim());
+                const now = new Date();
+                const twoDaysAgo = new Date(now);
+                twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                return regDate >= twoDaysAgo;
+            } catch {
+                return false;
+            }
+        }
+
+        // 신청기간 활성 여부 확인
+        function isPeriodActive(periodStr) {
+            if (!periodStr) return false;
+            const match = periodStr.match(/(\d{4}[-/.]\d{2}[-/.]\d{2})\s*~\s*(\d{4}[-/.]\d{2}[-/.]\d{2})/);
+            if (!match) {
+                if (periodStr.includes('상시') || periodStr.includes('예산소진')) return true;
+                return false;
+            }
+            try {
+                const endDate = new Date(match[2].replace(/\./g, '-'));
+                return endDate >= new Date();
+            } catch {
+                return false;
+            }
+        }
+
+        // 데이터 렌더링
+        function renderData(items) {
+            const tableBody = document.getElementById('tableBody');
+            const cardView = document.getElementById('cardView');
+            const tableContainer = document.getElementById('tableContainer');
+
+            tableContainer.style.display = 'block';
+
+            // 테이블 뷰
+            tableBody.innerHTML = items.map((item, i) => {
+                const badgeClass = getBadgeClass(item.분야);
+                const recent = isRecent(item.등록일);
+                const active = isPeriodActive(item.신청기간);
+                const delay = Math.min(i * 50, 500);
+
+                return `<tr style="animation-delay:${delay}ms">
+                    <td>${i + 1}</td>
+                    <td><span class="badge ${badgeClass}">${escapeHtml(item.분야)}</span></td>
+                    <td><span class="biz-name">${escapeHtml(item.사업명)}</span></td>
+                    <td><span class="period ${active ? 'active' : ''}">${escapeHtml(item.신청기간)}</span></td>
+                    <td><span class="reg-date ${recent ? 'recent' : ''}">${escapeHtml(item.등록일)}</span></td>
+                </tr>`;
+            }).join('');
+
+            // 카드 뷰 (모바일)
+            cardView.innerHTML = items.map((item, i) => {
+                const badgeClass = getBadgeClass(item.분야);
+                const recent = isRecent(item.등록일);
+                const delay = Math.min(i * 50, 500);
+
+                return `<div class="card" style="animation-delay:${delay}ms">
+                    <div class="card-header">
+                        <span class="badge ${badgeClass}">${escapeHtml(item.분야)}</span>
+                        <span class="reg-date ${recent ? 'recent' : ''}">${escapeHtml(item.등록일)}</span>
+                    </div>
+                    <div class="card-title">${escapeHtml(item.사업명)}</div>
+                    <div class="card-meta">
+                        <span>신청기간: ${escapeHtml(item.신청기간)}</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // 상태 바 업데이트
+            if (items.length === 0) {
+                const emptyContainer = document.getElementById('emptyContainer');
+                emptyContainer.style.display = 'block';
+                emptyContainer.innerHTML = '<p>해당 분야의 공고가 없습니다.</p>';
+            } else {
+                document.getElementById('emptyContainer').style.display = 'none';
+            }
+        }
+
+        // 에러 표시
+        function showError(error) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.style.display = 'block';
+            errorContainer.innerHTML = `
+                <p>데이터를 불러오지 못했습니다.</p>
+                <p class="hint">CORS 정책으로 인해 브라우저에서 직접 접근이 제한될 수 있습니다.</p>
+                <p class="hint" style="margin-top:10px;">아래 방법을 시도해 보세요:</p>
+                <p class="hint">1. CORS 브라우저 확장 프로그램 설치</p>
+                <p class="hint">2. 로컬 프록시 서버 사용</p>
+                <p class="hint">3. <a href="${BIZINFO_URL}" target="_blank" style="color:var(--neon-blue);">기업마당 직접 방문</a></p>
+                ${error ? `<p class="hint" style="margin-top:15px;color:#444;">오류: ${escapeHtml(error.message || String(error))}</p>` : ''}
+            `;
+        }
+
+        // HTML 이스케이프
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // 페이지 로드 시 자동 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
+    </script>
+</body>
+</html>
