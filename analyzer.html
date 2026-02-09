@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지원사업 공고 분석기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #0f1923;
+    color: #e0e6ed;
+    min-height: 100vh;
+  }
+
+  /* 헤더 */
+  header {
+    background: linear-gradient(135deg, #1a2634 0%, #0d2137 100%);
+    border-bottom: 2px solid #1e88e5;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+  }
+  header h1 span { color: #42a5f5; }
+  .header-badge {
+    background: #1e88e5;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  .header-sub {
+    width: 100%;
+    font-size: 13px;
+    color: #78909c;
+    margin-top: 2px;
+  }
+
+  /* 레이아웃 */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  /* 카드 */
+  .card {
+    background: #1a2634;
+    border: 1px solid #263545;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 15px;
+    border-bottom: 1px solid #263545;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-header .icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .card-body { padding: 20px; }
+
+  /* 입력 폼 */
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #90a4ae;
+    margin-bottom: 6px;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: #0f1923;
+    border: 1px solid #37474f;
+    border-radius: 8px;
+    color: #e0e6ed;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #42a5f5;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  select { cursor: pointer; }
+  select option { background: #1a2634; }
+
+  /* 버튼 */
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(30,136,229,.35);
+  }
+  .btn-secondary {
+    background: #263545;
+    color: #90a4ae;
+  }
+
+  /* 프로필 요약 */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .profile-item {
+    background: #0f1923;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .profile-item .pi-label {
+    font-size: 11px;
+    color: #607d8b;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .profile-item .pi-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #cfd8dc;
+  }
+
+  /* 결과 영역 */
+  .result-area {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #546e7a;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.7;
+  }
+  .result-area .placeholder-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+
+  /* 분석 결과 카드 */
+  .analysis { line-height: 1.8; font-size: 14px; }
+  .analysis .decision-badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .decision-SEND { background: #1b5e20; color: #69f0ae; border: 1px solid #2e7d32; }
+  .decision-SKIP { background: #b71c1c33; color: #ef9a9a; border: 1px solid #c62828; }
+  .analysis .section-title {
+    font-weight: 700;
+    color: #42a5f5;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .analysis .field-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .analysis .field-label {
+    font-weight: 700;
+    color: #90a4ae;
+    white-space: nowrap;
+  }
+  .analysis .field-value { color: #e0e6ed; }
+  .analysis .insight-box {
+    background: #0f1923;
+    border-left: 3px solid #42a5f5;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #b0bec5;
+  }
+  .analysis .skip-reason-box {
+    background: #0f1923;
+    border-left: 3px solid #ef5350;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #ef9a9a;
+  }
+  .analysis .closing-msg {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #1a2634, #1a3045);
+    border-radius: 8px;
+    font-size: 13px;
+    color: #80cbc4;
+    border: 1px solid #26a69a33;
+  }
+
+  /* 텔레그램 복사 영역 */
+  .tg-copy-area {
+    margin-top: 16px;
+    position: relative;
+  }
+  .tg-copy-area pre {
+    background: #0f1923;
+    border: 1px solid #37474f;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 12px;
+    font-family: 'Noto Sans KR', monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #b0bec5;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .tg-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #263545;
+    color: #90a4ae;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .tg-copy-btn:hover { background: #37474f; color: #fff; }
+
+  /* 기업마당 링크 */
+  .biz-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #42a5f5;
+    text-decoration: none;
+    font-size: 13px;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .biz-link:hover { text-decoration: underline; }
+
+  /* 전체 결과 컬럼 (우측) */
+  .right-col { display: flex; flex-direction: column; gap: 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1><span>&#9670;</span> 지원사업 공고 <span>분석기</span></h1>
+    <div class="header-sub">기업마당(bizinfo.go.kr) 공고 &rarr; (주)ABC 적합성 자동 판정</div>
+  </div>
+  <div class="header-badge">DX 컨설턴트</div>
+</header>
+
+<div class="container">
+  <!-- 왼쪽: 입력 -->
+  <div style="display:flex;flex-direction:column;gap:24px;">
+    <!-- 고객사 프로필 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="icon" style="background:#1565c0;">&#9881;</div>
+        고객사 프로필
+      </div>
+      <div class="card-body">
+        <div class="profile-grid">
+          <div class="profile-item">
+            <div class="pi-label">업종</div>
+            <div class="pi-value">자동차 부품 제조 (2차 협력사)</div>
+          </div>
+          <div class="profile-item">
+            <div class="pi-label">규모</div>
+            <div class="pi-value">매출 500억 / 200명</div>
+          </div>
+          <div class="profile-item">
+            <div class="pi-label">소재지</div>
+            <div class="pi-value">수도권·경기·경상 산업단지</div>
+          </div>
+          <div class="profile-item">
+            <div class="pi-label">현안</div>
+            <div class="pi-value">불량률↑ · 스마트공장 고도화</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공고 입력 폼 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="icon" style="background:#2e7d32;">&#9998;</div>
+        공고 정보 입력
+        <a class="biz-link" href="https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/list.do" target="_blank" style="margin-left:auto;">기업마당 바로가기 &rarr;</a>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>지원분야</label>
+          <select id="field">
+            <option value="">-- 선택 --</option>
+            <option value="기술">기술</option>
+            <option value="인력">인력</option>
+            <option value="금융">금융</option>
+            <option value="경영">경영</option>
+            <option value="판로·수출">판로·수출</option>
+            <option value="수출">수출</option>
+            <option value="내수">내수</option>
+            <option value="창업">창업</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>사업명</label>
+          <input type="text" id="projectName" placeholder="예: 2026년 스마트공장 보급·확산사업">
+        </div>
+        <div class="form-group">
+          <label>등록일</label>
+          <input type="date" id="regDate">
+        </div>
+        <div class="form-group">
+          <label>신청기간</label>
+          <input type="text" id="applyPeriod" placeholder="예: 2026.03.01 ~ 2026.04.30">
+        </div>
+        <div class="form-group">
+          <label>공고 상세 내용 (선택)</label>
+          <textarea id="details" rows="3" placeholder="공고 본문 중 핵심 내용을 붙여넣기 하세요"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="analyze()">&#9654; 분석 실행</button>
+          <button class="btn btn-secondary" onclick="clearForm()">초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 결과 -->
+  <div class="right-col">
+    <!-- 분석 결과 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="icon" style="background:#f57f17;">&#9733;</div>
+        분석 결과
+      </div>
+      <div class="card-body">
+        <div id="resultArea" class="result-area">
+          <div class="placeholder-icon">&#128269;</div>
+          공고 정보를 입력하고<br><b>분석 실행</b>을 눌러주세요
+        </div>
+      </div>
+    </div>
+
+    <!-- 텔레그램 메시지 -->
+    <div class="card" id="tgCard" style="display:none;">
+      <div class="card-header">
+        <div class="icon" style="background:#0288d1;">&#9993;</div>
+        텔레그램 발송 메시지
+      </div>
+      <div class="card-body">
+        <div class="tg-copy-area">
+          <button class="tg-copy-btn" onclick="copyTg()">복사</button>
+          <pre id="tgMessage"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── 적합성 판정 키워드 ───
+const POSITIVE_KEYWORDS = [
+  '스마트공장','스마트 공장','공정 개선','공정개선','제조혁신','제조 혁신',
+  '디지털 전환','디지털전환','DX','AI','인공지능','자동화','로봇',
+  'MES','ERP','IoT','빅데이터','클라우드','품질 개선','품질개선',
+  '생산성 향상','생산성향상','설비','제조','공장','혁신형','고도화',
+  '인력','채용','금융','대출','보증','투자','자금'
+];
+
+const EXCLUDE_KEYWORDS = [
+  '소상공인 전용','소상공인전용','서비스업 전용','서비스업전용',
+  '창업 3년 미만','예비창업','예비 창업'
+];
+
+const EXCLUDE_FIELDS = ['수출','내수','창업'];
+
+// ─── 분석 함수 ───
+function analyze() {
+  const field = document.getElementById('field').value.trim();
+  const name = document.getElementById('projectName').value.trim();
+  const regDate = document.getElementById('regDate').value;
+  const period = document.getElementById('applyPeriod').value.trim();
+  const details = document.getElementById('details').value.trim();
+
+  if (!name) {
+    alert('사업명을 입력해 주세요.');
+    return;
+  }
+
+  const combined = (field + ' ' + name + ' ' + details).toLowerCase();
+
+  // 1) 제외 판정
+  let skipReason = null;
+
+  if (EXCLUDE_FIELDS.includes(field)) {
+    skipReason = '지원분야가 "' + field + '"으로, 제조업 디지털전환과 직접적 관련이 없는 사업입니다.';
+  }
+
+  if (!skipReason) {
+    for (const kw of EXCLUDE_KEYWORDS) {
+      if (combined.includes(kw.toLowerCase())) {
+        skipReason = '"' + kw + '" 대상 사업으로, 매출 500억 규모의 제조 중소기업에 해당하지 않습니다.';
+        break;
+      }
+    }
+  }
+
+  // 2) 적합 키워드 매칭
+  const matched = POSITIVE_KEYWORDS.filter(kw => combined.includes(kw.toLowerCase()));
+
+  if (!skipReason && matched.length === 0) {
+    skipReason = '스마트공장, 디지털전환, 자동화, 인력, 금융 등 핵심 키워드가 사업명 및 상세 내용에서 확인되지 않습니다.';
+  }
+
+  const decision = skipReason ? 'SKIP' : 'SEND';
+
+  // ─── 결과 렌더링 ───
+  const el = document.getElementById('resultArea');
+  el.classList.remove('result-area');
+
+  const regDateFmt = regDate || '(미입력)';
+  const periodFmt = period || '(미입력)';
+
+  if (decision === 'SEND') {
+    const insight = buildInsight(name, matched, details);
+    const actions = buildActions(matched);
+
+    el.innerHTML = `
+      <div class="analysis">
+        <div class="decision-badge decision-SEND">&#10004; decision=SEND &mdash; 적합</div>
+
+        <div class="section-title">&#9632; 공고 정보</div>
+        <div class="field-row"><span class="field-label">사업명:</span><span class="field-value">${esc(name)}</span></div>
+        <div class="field-row"><span class="field-label">지원분야:</span><span class="field-value">${esc(field || '(미선택)')}</span></div>
+        <div class="field-row"><span class="field-label">등록일:</span><span class="field-value">${esc(regDateFmt)}</span></div>
+        <div class="field-row"><span class="field-label">신청기간:</span><span class="field-value">${esc(periodFmt)}</span></div>
+
+        <div class="section-title">&#9632; 매칭 키워드</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">
+          ${matched.map(k => `<span style="background:#1b5e20;color:#69f0ae;padding:2px 10px;border-radius:4px;font-size:12px;">${esc(k)}</span>`).join('')}
+        </div>
+
+        <div class="section-title">&#9632; 전략적 판단</div>
+        <div class="insight-box">${insight}</div>
+
+        <div class="section-title">&#9632; 필요한 조치</div>
+        <div class="insight-box" style="border-left-color:#ffa726;">${actions}</div>
+
+        <div class="closing-msg">
+          "대표님, 본 사업은 우리 회사의 <b>생산라인 자동화 추진방향</b>과 상당히 일치합니다. 구체적인 검토가 필요하시면 방문해서 알려드리겠습니다."
+        </div>
+      </div>
+    `;
+
+    // 텔레그램 메시지 생성
+    showTelegram(buildTelegramSend(name, regDateFmt, periodFmt, insight, actions));
+
+  } else {
+    el.innerHTML = `
+      <div class="analysis">
+        <div class="decision-badge decision-SKIP">&#10008; decision=SKIP &mdash; 제외</div>
+
+        <div class="section-title">&#9632; 공고 정보</div>
+        <div class="field-row"><span class="field-label">사업명:</span><span class="field-value">${esc(name)}</span></div>
+        <div class="field-row"><span class="field-label">지원분야:</span><span class="field-value">${esc(field || '(미선택)')}</span></div>
+        <div class="field-row"><span class="field-label">등록일:</span><span class="field-value">${esc(regDateFmt)}</span></div>
+        <div class="field-row"><span class="field-label">신청기간:</span><span class="field-value">${esc(periodFmt)}</span></div>
+
+        <div class="section-title">&#9632; 제외 사유</div>
+        <div class="skip-reason-box">${esc(skipReason)}</div>
+      </div>
+    `;
+    showTelegram('decision=SKIP\n\n제외 사유: ' + skipReason);
+  }
+}
+
+// ─── 컨설팅 인사이트 생성 ───
+function buildInsight(name, matched, details) {
+  const parts = [];
+  const has = kws => kws.some(k => matched.includes(k));
+
+  if (has(['스마트공장','스마트 공장','고도화'])) {
+    parts.push('본 사업은 스마트공장 구축·고도화를 직접 지원하며, 현재 생산라인 노후화로 인한 불량률 상승 문제를 해결할 수 있는 <b>핵심 사업</b>입니다.');
+  }
+  if (has(['AI','인공지능','빅데이터'])) {
+    parts.push('AI/빅데이터 기반 품질 예측 및 공정 최적화를 통해 불량률을 획기적으로 낮출 수 있습니다.');
+  }
+  if (has(['자동화','로봇','설비'])) {
+    parts.push('설비 자동화·로봇 도입을 통한 인력 의존도 감소 및 생산성 향상이 기대됩니다.');
+  }
+  if (has(['MES','ERP','IoT'])) {
+    parts.push('MES/ERP/IoT 시스템 도입으로 실시간 생산 모니터링 및 데이터 기반 의사결정 체계를 구축할 수 있습니다.');
+  }
+  if (has(['디지털 전환','디지털전환','DX'])) {
+    parts.push('디지털 전환(DX) 추진 과제와 직접적으로 부합하여 정부 지원금 확보에 유리합니다.');
+  }
+  if (has(['공정 개선','공정개선','제조혁신','제조 혁신','품질 개선','품질개선'])) {
+    parts.push('공정 혁신 및 품질 개선을 통해 2차 협력사 경쟁력을 강화할 수 있는 기회입니다.');
+  }
+  if (has(['인력','채용'])) {
+    parts.push('인력 채용 및 교육 지원을 통해 현재 부족한 전문인력 확보가 가능합니다.');
+  }
+  if (has(['금융','대출','보증','투자','자금'])) {
+    parts.push('금융 지원(보증·대출·투자)을 통해 설비 투자 재원 확보에 도움이 됩니다.');
+  }
+
+  if (parts.length === 0) {
+    parts.push('본 사업은 제조 중소기업의 경쟁력 강화를 위한 지원사업으로, 현재 당사의 DX 추진 방향에 부합할 가능성이 높습니다.');
+  }
+
+  return parts.join('<br>');
+}
+
+// ─── 필요 조치 생성 ───
+function buildActions(matched) {
+  const items = ['사업 공고문 전문 다운로드 및 세부 자격요건 확인'];
+  const has = kws => kws.some(k => matched.includes(k));
+
+  if (has(['스마트공장','스마트 공장','고도화'])) {
+    items.push('현재 스마트공장 수준(기초/중간1/중간2/고도화) 자가진단 실시');
+  }
+  if (has(['AI','인공지능','자동화','로봇','MES','ERP','IoT'])) {
+    items.push('기존 생산설비 및 IT 인프라 현황 정리 (AS-IS 분석)');
+  }
+  items.push('최근 3개년 재무제표 및 사업자등록증 준비');
+  items.push('사업계획서 초안 작성 착수 (지원 목적에 맞춰 커스터마이징)');
+
+  return items.map((it, i) => `${i + 1}. ${it}`).join('<br>');
+}
+
+// ─── 텔레그램 메시지 ───
+function buildTelegramSend(name, regDate, period, insight, actions) {
+  // 텔레그램 HTML 형식 (태그 최소 사용)
+  const plain_insight = insight.replace(/<b>/g,'').replace(/<\/b>/g,'').replace(/<br>/g,'\n');
+  const plain_actions = actions.replace(/<br>/g,'\n');
+
+  return `decision=SEND
+
+<b>[(주)ABC에 도움이 되는 지원사업 알림]</b>
+
+■ <b>사업명</b>: <b>${name}</b>
+■ <b>등록일</b>: <code>${regDate}</code>
+■ <b>신청기간</b>: ${period}
+
+<b>전략적 판단</b>
+■ <b>사업 필요성</b>:
+${plain_insight}
+
+■ <b>필요한 조치</b>:
+<u>${plain_actions}</u>
+
+"대표님, 본 사업은 우리 회사의 <b>생산라인 자동화 추진방향</b>과 상당히 일치합니다. 구체적인 검토가 필요하시면 방문해서 알려드리겠습니다."`;
+}
+
+function showTelegram(msg) {
+  document.getElementById('tgCard').style.display = 'block';
+  document.getElementById('tgMessage').textContent = msg;
+}
+
+function copyTg() {
+  const text = document.getElementById('tgMessage').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.tg-copy-btn');
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  });
+}
+
+function clearForm() {
+  document.getElementById('field').value = '';
+  document.getElementById('projectName').value = '';
+  document.getElementById('regDate').value = '';
+  document.getElementById('applyPeriod').value = '';
+  document.getElementById('details').value = '';
+  document.getElementById('resultArea').className = 'result-area';
+  document.getElementById('resultArea').innerHTML = '<div class="placeholder-icon">&#128269;</div>공고 정보를 입력하고<br><b>분석 실행</b>을 눌러주세요';
+  document.getElementById('tgCard').style.display = 'none';
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>
+
+</body>
+</html>
